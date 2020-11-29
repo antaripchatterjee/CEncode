@@ -1,0 +1,1 @@
+Objects(`*.o`) file will be generated here.

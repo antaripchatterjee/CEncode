@@ -1,0 +1,6 @@
+/build/debug/*.a
+/build/release/*.a
+/build/debug/*.dll
+/build/release/*.dll
+/objects/*.o
+*.exe
