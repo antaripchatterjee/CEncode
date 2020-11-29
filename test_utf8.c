@@ -10,19 +10,15 @@ int main() {
     }, {});
     my_custom_assert(wcslen(utf_encoded->w_str) == utf_encoded->w_size, {
         printf("Encoded String Length: %u\n", (unsigned) utf_encoded->w_size);
-        wprintf(L"Encoded String: %ls -> %d\n", utf_encoded->w_str, (int)wcslen(utf_encoded->w_str));
-        size_t copying_len = wcslen(utf_encoded->w_str);
-        unsigned char* u_string = allocate(unsigned char, copying_len);
+        wprintf(L"Encoded String: %ls -> %d\n", utf_encoded->w_str, (int) wcslen(utf_encoded->w_str));
+        size_t copying_len = wcslen(utf_encoded->w_str) + 1;
+        unsigned char u_string[copying_len];
         copy_as_ustring(utf_encoded->w_str, u_string, copying_len);
-        printf("Encoded String to U_STRING: %s\n", u_string);
-        copying_len = ucslen(u_string);
-        wchar_t* w_string = allocate(wchar_t, copying_len);
+        printf("Encoded String to U_STRING: %s -> %d\n", u_string, (int) ucslen(u_string));
+        copying_len = ucslen(u_string) + 1;
+        wchar_t w_string[copying_len];
         copy_as_wstring(u_string, w_string, copying_len);
-        wprintf(L"U_STRING to W_STRING: %ls\n", w_string);
-        free(u_string);
-        printf("u_string freed\n");
-        _putws(w_string);
-        free(w_string);
+        wprintf(L"U_STRING to W_STRING: %ls -> %d\n", w_string, (int) wcslen(w_string));
     }, {
         utf_free(utf_encoded);
     });
