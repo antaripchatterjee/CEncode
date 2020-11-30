@@ -16,23 +16,41 @@ utf_t* utf8_encode(const wchar_t* orig_str, size_t orig_str_len) {
     if(!orig_str) return NULL;
     if(!orig_str_len) orig_str_len = wcslen(orig_str);
 
+    
+    wchar_t encoded_char[5];
+    // wmemset(encoded_char, L'\x00', sizeof(wchar_t) * 5);
     utf_t* utf8 = (utf_t*) malloc(sizeof(utf_t));
+    if(utf8 == NULL) {
+        perror("Can not allocate memory for utf8\n");
+        return NULL;
+    }
     utf8->w_size = 0;
-    utf8->w_str = (wchar_t*) malloc(sizeof(wchar_t));
+    if(!(utf8->w_str = (wchar_t*) malloc(sizeof(wchar_t)))) {
+        perror("Can not allocated for utf8->w_str\n");
+        return NULL;
+    }
     utf8->method = _utf8_enc;
     wmemset(utf8->w_str, L'\x00', sizeof(wchar_t));
-    wchar_t* encoded_char = NULL;
+    // wchar_t* encoded_char = NULL;
     bool is_surrogate_pair = false;
     unsigned surrogate_multiple = 0;
+    // size_t _prev_len = 0;
     for(size_t i = 0; i < orig_str_len; i++) {
+        // wmemset(encoded_char, L'\x00', sizeof(wchar_t) * 5);
+        // wcscpy(encoded_char, L"\x00\x00\x00\x00\x00");
+        encoded_char[0] = L'\x00';
+        encoded_char[1] = L'\x00';
+        encoded_char[2] = L'\x00';
+        encoded_char[3] = L'\x00';
+        encoded_char[4] = L'\x00';
         unsigned wch = (unsigned) orig_str[i];
-        short byte_len;
+        short byte_len = 0;
         if(is_surrogate_pair) {
             is_surrogate_pair = false;
             if(wch >= 0xdc00 && wch <= 0xdfff) {
                 wch = surrogate_multiple * 1024 + (wch  - 0xdc00) + 0x10000;
             } else {
-                if(encoded_char) free(encoded_char);
+                // if(encoded_char) free(encoded_char);
                 utf_free(utf8);
                 return NULL;
             }
@@ -47,7 +65,7 @@ utf_t* utf8_encode(const wchar_t* orig_str, size_t orig_str_len) {
                 surrogate_multiple = wch - 0xd800;
                 continue;
             } else if(wch >= 0xdc00 && wch <= 0xdfff) {
-                if(encoded_char) free(encoded_char);
+                // if(encoded_char) free(encoded_char);
                 utf_free(utf8);
                 return NULL;
             }
@@ -55,16 +73,17 @@ utf_t* utf8_encode(const wchar_t* orig_str, size_t orig_str_len) {
         } else if(wch >= 0x10000 && wch < 0x200000) {
             byte_len = 4;
         } else {
+            byte_len = -1;
             utf_free(utf8);
-            if(encoded_char) free(encoded_char);
+            // if(encoded_char) free(encoded_char);
             return NULL;
         }
-        if(encoded_char) {
-            encoded_char = (wchar_t*)realloc(encoded_char, sizeof(wchar_t) * (byte_len + 1));
-        } else {
-            encoded_char = (wchar_t*) malloc(sizeof(wchar_t) * (byte_len + 1));
-        }
-        wmemset(encoded_char, L'\x00', sizeof(wchar_t) * (byte_len + 1));
+        // if(encoded_char) {
+        //     encoded_char = (wchar_t*)realloc(encoded_char, sizeof(wchar_t) * (byte_len + 1));
+        // } else {
+        //     encoded_char = (wchar_t*) malloc(sizeof(wchar_t) * (byte_len + 1));
+        // }
+        
         if(byte_len == 1) {
             encoded_char[0] = wch;
         } else if(byte_len == 2) {
@@ -80,14 +99,19 @@ utf_t* utf8_encode(const wchar_t* orig_str, size_t orig_str_len) {
             encoded_char[2] = (wchar_t)(((wch >> 6) & 0b00111111) | 0b10000000);
             encoded_char[3] = (wchar_t)((wch & 0b00111111) | 0b10000000);
         }
-        utf8->w_str = (wchar_t*)realloc(utf8->w_str,
-                                sizeof(wchar_t) * (byte_len + 1 + wcslen(utf8->w_str)));
+        size_t _new_size= (byte_len + 1 + utf8->w_size);
+        utf8->w_str = (wchar_t*)realloc(utf8->w_str, sizeof(wchar_t) * _new_size);
 
         wcscat(utf8->w_str, encoded_char);
         utf8->w_size += byte_len;
         utf8->w_str[utf8->w_size] = L'\x00';
+        // _prev_len = byte_len;
+        // #ifdef APPROACH_SECONDARY
+        // free(encoded_char);
+        // encoded_char = NULL;
+        // #endif
     }
-    if(encoded_char) free(encoded_char);
+    // if(encoded_char) free(encoded_char);
     return utf8;
 }
 utf_t* utf8_decode(const wchar_t* encoded_str, size_t enc_str_len) {
@@ -113,7 +137,7 @@ utf_t* utf8_decode(const wchar_t* encoded_str, size_t enc_str_len) {
             byte_len = 3;
         } else if((wch & 0b00001000) == 0) {
             byte_len = 4;
-            _new_w_byte_size = 2;
+            _new_w_byte_size = wcslen(L"\U00010000");
         } else {
             byte_len = -1;
         }

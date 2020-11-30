@@ -4,3 +4,4 @@
 /build/release/*.dll
 /objects/*.o
 *.exe
+test_utf8

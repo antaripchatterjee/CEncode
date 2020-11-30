@@ -1,20 +1,22 @@
 CC=gcc
-CFLAGS=-Wall -lm -std=c11 -static-libgcc
+CFLAGS=-Wall -lm -std=c11 -static-libgcc -g
 INCLUDES=./include
 BUILD_D=./build/debug
 BUILD_R=./build/release
 OBJECTS=./objects
 AR=ar
+# SECONDARY=APPROACH_SECONDARY
+
 
 
 all: test_utf8.o cencode
-	$(CC) $(CFLAGS) -I$(INCLUDES) $(OBJECTS)/test_utf8.o $(BUILD_D)/cencode.a -o test_utf8
+	$(CC) $(CFLAGS) -I$(INCLUDES) $(OBJECTS)/test_utf8.o $(BUILD_D)/cencode.a -o test_utf8 
 
 install: utf.o utf8.o
-	$(AR) -rcs $(BUILD_R)/cencode.a $(OBJECTS)/utf.o $(OBJECTS)/utf8.o 
+	$(AR) -rcs $(BUILD_R)/cencode.a $(OBJECTS)/utf.o $(OBJECTS)/utf8.o
 
 cencode: utf.o utf8.o
-	$(AR) -rc $(BUILD_D)/cencode.a $(OBJECTS)/utf.o $(OBJECTS)/utf8.o 
+	$(AR) -rc $(BUILD_D)/cencode.a $(OBJECTS)/utf.o $(OBJECTS)/utf8.o
 
 utf.o: ./src/utf.c
 	$(CC) $(CFLAGS) -I$(INCLUDES) -c ./src/utf.c -o $(OBJECTS)/utf.o

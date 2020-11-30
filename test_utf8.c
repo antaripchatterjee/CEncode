@@ -1,8 +1,11 @@
 #include <utf8.h>
+#include <locale.h>
 #include "test.h"
 
 
 int main() {
+    setlocale(LC_ALL, "en_US.utf8");
+    printf("CEncode - %s\n", CENCODE_VERSION);
     const wchar_t *wstr = L"Hello\ue000World.\xd8Good\U0001FEFEbye";
     utf_t* utf_encoded = utf8_encode(wstr, 0);
     my_custom_assert(utf_encoded != NULL, {
@@ -30,6 +33,7 @@ int main() {
         utf_free(utf_encoded);
     });
     my_custom_assert(wcslen(utf_decoded->w_str) == wcslen(wstr), {}, {
+        printf("utf_decoded->w_str = %d | wstr = %d\n", (int) wcslen(utf_decoded->w_str), (int)wcslen(wstr));
         utf_free(utf_encoded);
         utf_free(utf_decoded);
     });
